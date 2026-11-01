@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#302e2b">
+<title>شطرنج آنلاین</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23302e2b'/%3E%3Ctext x='50' y='72' font-size='68' text-anchor='middle' fill='%2381b64c'%3E%E2%99%9E%3C/text%3E%3C/svg%3E">
+<style>
+:root{--light:#eeeed2;--dark:#769656;--bg:#302e2b;--panel:#262421;--panel2:#3a3733;--ink:#f1efe9;--mute:#a5a29b;--acc:#81b64c;--bw:min(calc(100vw - 12px),620px)}
+@media (min-aspect-ratio:1/1){:root{--bw:min(calc(100vw - 12px),calc(100vh - 300px),620px)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,"Vazirmatn",sans-serif}
+body{min-height:100vh;display:flex;justify-content:center;padding:6px 0 24px}
+.app{width:var(--bw);display:flex;flex-direction:column;gap:8px}
+header{display:flex;align-items:center;justify-content:space-between;padding:2px 2px}
+header h1{margin:0;font-size:22px;font-weight:800;color:var(--acc);letter-spacing:-.2px}
+#variantTag{font-size:12px;background:var(--panel);border:1px solid #4a4640;border-radius:20px;padding:4px 12px;color:var(--ink)}
+.bar{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 4px}
+.bar .dot{width:14px;height:14px;border-radius:50%;border:2px solid #000;flex:none}
+.dot.w{background:#fff}.dot.b{background:#222;border-color:#888}
+.bar .nm{font-weight:700;font-size:14px;white-space:nowrap}
+.bar .cap{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;direction:ltr;font-size:15px;line-height:1;gap:0}
+.cp{margin-inline-end:-3px;font-family:"Segoe UI Symbol","Noto Sans Symbols 2","DejaVu Sans",serif}
+.cp.w{color:#f4f4f4;text-shadow:0 0 1px #000,0 0 1px #000}.cp.b{color:#1d1d1d;text-shadow:0 0 1px #aaa}
+.bar .ck{font-size:12px;color:#f0c24b;font-weight:700}
+#board{width:var(--bw);height:var(--bw);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);direction:ltr;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:6px;overflow:hidden;box-shadow:0 6px 22px rgba(0,0,0,.45)}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
+.sq.light{background-color:var(--light)}.sq.dark{background-color:var(--dark)}
+.sq.last{background-image:linear-gradient(rgba(255,226,60,.5),rgba(255,226,60,.5))}
+.sq.sel{background-image:linear-gradient(rgba(255,226,60,.78),rgba(255,226,60,.78))}
+.sq.chk{background-image:radial-gradient(circle,rgba(255,30,30,.95) 0%,rgba(230,20,20,.55) 45%,rgba(230,20,20,0) 76%)}
+.sq.tgt::after{content:"";position:absolute;left:50%;top:50%;width:30%;height:30%;border-radius:50%;background:rgba(20,20,20,.25);transform:translate(-50%,-50%);pointer-events:none;z-index:4}
+.sq.tgt.cap::after{width:92%;height:92%;background:transparent;border:calc(var(--bw)/8*.09) solid rgba(20,20,20,.28)}
+.co{position:absolute;font-style:normal;font-weight:700;font-size:calc(var(--bw)/8*.2);line-height:1;pointer-events:none;z-index:2;direction:ltr}
+.co.r{top:3px;left:3px}.co.f{bottom:2px;right:3px}
+.sq.light .co{color:var(--dark)}.sq.dark .co{color:var(--light)}
+.pc{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3;font-size:calc(var(--bw)/8*.88);line-height:1;font-family:"Segoe UI Symbol","Noto Sans Symbols 2","DejaVu Sans","Arial Unicode MS",serif}
+.pc::before,.pc::after{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.pc::before{content:attr(data-f)}.pc::after{content:attr(data-o)}
+.pc.w::before{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55)}.pc.w::after{color:#1a1a1a}
+.pc.b::before{color:#454545;text-shadow:0 0 2px rgba(255,255,255,.3)}.pc.b::after{color:#000}
+.pc.let{font-family:system-ui,sans-serif}
+.pc.let::before,.pc.let::after{content:none}
+.pc.let{font-weight:800;font-size:calc(var(--bw)/8*.42)}
+.pc.let.w{color:#222;background:radial-gradient(circle,#fff 62%,transparent 63%);}
+.pc.let.b{color:#fff;background:radial-gradient(circle,#2f2f2f 62%,transparent 63%)}
+.pc.let{background-size:84% 84%;background-position:center;background-repeat:no-repeat}
+.ghost{position:fixed;z-index:50;pointer-events:none;display:flex;transform:scale(1.18);filter:drop-shadow(0 6px 6px rgba(0,0,0,.4))}
+#board.blind:not(.peek) .pc{opacity:0}
+.status{text-align:center;font-weight:700;font-size:15px;padding:7px 10px;background:var(--panel);border-radius:8px;min-height:36px}
+.status.warn{color:#ff7a6b}.status.end{color:#0f1a05;background:var(--acc)}
+#moves{display:flex;align-items:center;gap:4px;overflow-x:auto;white-space:nowrap;direction:ltr;background:var(--panel);border-radius:8px;padding:7px 10px;font-size:14px;min-height:34px;scrollbar-width:none}
+#moves::-webkit-scrollbar{display:none}
+.mn{color:var(--mute);margin-left:6px}.mv{padding:1px 5px;border-radius:4px}.mv.cur{background:#4b4843;font-weight:700}.muted{color:var(--mute);direction:rtl;font-size:13px}
+.ctrls{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+button{font:inherit;color:var(--ink);cursor:pointer}
+.btn{background:var(--panel2);border:0;border-radius:9px;padding:11px 4px;font-size:14px;font-weight:600;transition:transform .08s,background .15s}
+.btn:active{transform:scale(.96);background:#4a4742}.btn:disabled{opacity:.4}
+.btn.pri{background:var(--acc);color:#10190a}
+#peekBtn{grid-column:1/-1}#peekBtn.on{background:#c9a227;color:#111}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;z-index:40;padding:12px}
+.modal.open{display:flex;animation:fade .15s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sheet{background:var(--panel);border-radius:14px;width:min(100%,480px);max-height:92vh;overflow:auto;padding:16px;box-shadow:0 14px 40px rgba(0,0,0,.5);animation:pop .18s ease-out}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:none;opacity:1}}
+.sheet h2{margin:0 0 12px;font-size:19px}
+.row{margin:12px 0}.row>label{display:block;font-size:13px;color:var(--mute);margin-bottom:6px}
+.segs{display:flex;gap:6px;flex-wrap:wrap}
+.segb{flex:1;min-width:70px;background:var(--panel2);border:2px solid transparent;border-radius:8px;padding:9px 6px;font-size:14px}
+.segb.on{border-color:var(--acc);background:#3f4a33}
+.vgrid{display:flex;flex-direction:column;gap:6px}
+.vcard{display:flex;align-items:center;gap:12px;background:var(--panel2);border:2px solid transparent;border-radius:10px;padding:9px 12px;text-align:right}
+.vcard.on{border-color:var(--acc);background:#3f4a33}
+.vi{font-size:26px;width:38px;text-align:center;flex:none;color:#9fd16a;font-weight:800}
+.vt{display:flex;flex-direction:column;gap:2px}.vt b{font-size:15px}.vt small{color:var(--mute);font-size:12.5px;line-height:1.5}
+.sw{width:38px;height:38px;border-radius:50%;border:3px solid transparent;padding:0}.sw.on{border-color:var(--acc)}
+.themes{display:flex;gap:10px}
+.actions{display:flex;gap:8px;margin-top:14px}.actions .btn{flex:1;padding:12px}
+#promo .sheet{width:auto;text-align:center}
+#promoBtns{display:flex;gap:8px;direction:ltr;margin:10px 0}
+.promoBtn{width:calc(var(--bw)/6);height:calc(var(--bw)/6);max-width:96px;max-height:96px;border:0;border-radius:10px;background:var(--light);position:relative;padding:0}
+.promoBtn .pc{font-size:calc(var(--bw)/6*.82);pointer-events:none}
+.promoBtn .pc.let{font-size:calc(var(--bw)/6*.4)}
+#end .sheet{text-align:center}#end h2{font-size:24px;color:var(--acc)}#end p{color:var(--mute);margin:4px 0 0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header><h1>شطرنج آنلاین</h1><span id="variantTag"></span></header>
+  <div class="bar" id="topBar"><span class="dot" id="topDot"></span><span class="nm" id="topName"></span><span class="cap" id="topCap"></span><span class="ck" id="topChk"></span></div>
+  <div id="board"></div>
+  <div class="bar" id="botBar"><span class="dot" id="botDot"></span><span class="nm" id="botName"></span><span class="cap" id="botCap"></span><span class="ck" id="botChk"></span></div>
+  <div class="status" id="status"></div>
+  <div id="moves"></div>
+  <div class="ctrls">
+    <button class="btn pri" id="newBtn">بازی جدید</button>
+    <button class="btn" id="undoBtn">↶ برگشت</button>
+    <button class="btn" id="flipBtn">⇅ چرخش</button>
+    <button class="btn" id="resignBtn">🏳 تسلیم</button>
+    <button class="btn" id="peekBtn" hidden>👁 نگه دار تا مهره‌ها را ببینی</button>
+  </div>
+</div>
+
+<div class="modal" id="settings"><div class="sheet">
+  <h2>بازی جدید</h2>
+  <div class="row"><label>حالت بازی</label><div class="segs" id="sMode"></div></div>
+  <div class="row" id="rowLevel"><label>سطح کامپیوتر</label><div class="segs" id="sLevel"></div></div>
+  <div class="row" id="rowColor"><label>رنگ شما</label><div class="segs" id="sColor"></div></div>
+  <div class="row"><label>نوع شطرنج</label><div class="vgrid" id="sVariants"></div></div>
+  <div class="row"><label>رنگ صفحه</label><div class="themes" id="sTheme"></div></div>
+  <div class="row"><label>سبک مهره‌ها</label><div class="segs" id="sPieces"></div></div>
+  <div class="row"><label>صدا</label><div class="segs" id="sSound"></div></div>
+  <div class="actions"><button class="btn pri" id="startBtn">شروع بازی</button><button class="btn" id="closeSet">بستن</button></div>
+</div></div>
+
+<div class="modal" id="promo"><div class="sheet"><h2>ارتقای پیاده</h2><div id="promoBtns"></div><button class="btn" id="promoCancel">لغو</button></div></div>
+
+<div class="modal" id="end"><div class="sheet"><h2 id="endTitle"></h2><p id="endText"></p>
+  <div class="actions"><button class="btn pri" id="endNew">بازی جدید</button><button class="btn" id="endClose">دیدن صفحه</button></div>
+</div></div>
+
+<script>
+/* ===== ENGINE ===== */
+const VALS = { P: 100, N: 320, B: 330, R: 500, Q: 900, K: 0 };
+let VARIANT = 'standard';
+const KN = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+const KG = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const BD = [[-1,-1],[-1,1],[1,-1],[1,1]];
+const RD = [[-1,0],[1,0],[0,-1],[0,1]];
+const other = c => (c === 'w' ? 'b' : 'w');
+const sqName = i => 'abcdefgh'[i & 7] + (8 - (i >> 3));
+
+function initialState() {
+  const b = new Array(64).fill(null);
+  const back = 'RNBQKBNR';
+  for (let c = 0; c < 8; c++) {
+    b[c] = 'b' + back[c];
+    b[8 + c] = 'bP';
+    b[48 + c] = 'wP';
+    b[56 + c] = 'w' + back[c];
+  }
+  return { b, t: 'w', c: { wK: true, wQ: true, bK: true, bQ: true }, ep: -1, hm: 0, fm: 1, ck: { w: 0, b: 0 } };
+}
+
+function attacked(b, sq, by) {
+  const r = sq >> 3, c = sq & 7;
+  const pr = by === 'w' ? r + 1 : r - 1;
+  if (pr >= 0 && pr < 8) {
+    if (c > 0 && b[pr * 8 + c - 1] === by + 'P') return true;
+    if (c < 7 && b[pr * 8 + c + 1] === by + 'P') return true;
+  }
+  for (let k = 0; k < 8; k++) {
+    let rr = r + KN[k][0], cc = c + KN[k][1];
+    if (rr >= 0 && rr < 8 && cc >= 0 && cc < 8 && b[rr * 8 + cc] === by + 'N') return true;
+    rr = r + KG[k][0]; cc = c + KG[k][1];
+    if (rr >= 0 && rr < 8 && cc >= 0 && cc < 8 && b[rr * 8 + cc] === by + 'K') return true;
+  }
+  for (let k = 0; k < 4; k++) {
+    let dr = BD[k][0], dc = BD[k][1], rr = r + dr, cc = c + dc;
+    while (rr >= 0 && rr < 8 && cc >= 0 && cc < 8) {
+      const p = b[rr * 8 + cc];
+      if (p) { if (p[0] === by && (p[1] === 'B' || p[1] === 'Q')) return true; break; }
+      rr += dr; cc += dc;
+    }
+    dr = RD[k][0]; dc = RD[k][1]; rr = r + dr; cc = c + dc;
+    while (rr >= 0 && rr < 8 && cc >= 0 && cc < 8) {
+      const p = b[rr * 8 + cc];
+      if (p) { if (p[0] === by && (p[1] === 'R' || p[1] === 'Q')) return true; break; }
+      rr += dr; cc += dc;
+    }
+  }
+  return false;
+}
+
+function inCheck(s) {
+  const k = s.b.indexOf(s.t + 'K');
+  return k >= 0 && attacked(s.b, k, other(s.t));
+}
+
+function genPseudo(s) {
+  const b = s.b, us = s.t, them = other(us), moves = [];
+  const selfCap = VARIANT === 'capture';
+  for (let i = 0; i < 64; i++) {
+    const p = b[i];
+    if (!p || p[0] !== us) continue;
+    const r = i >> 3, c = i & 7, ty = p[1];
+    if (ty === 'P') {
+      const dir = us === 'w' ? -1 : 1, start = us === 'w' ? 6 : 1, last = us === 'w' ? 0 : 7;
+      const push = (t, cap, dbl) => {
+        if ((t >> 3) === last) { for (const pr of 'QRBN') moves.push({ f: i, t, p: 'P', cap, pr, dbl }); }
+        else moves.push({ f: i, t, p: 'P', cap, dbl });
+      };
+      const r1 = r + dir;
+      if (r1 >= 0 && r1 < 8) {
+        const t1 = r1 * 8 + c;
+        if (!b[t1]) {
+          push(t1, null, false);
+          if (r === start || VARIANT === 'torpedo') {
+            const r2 = r + 2 * dir;
+            if (r2 >= 0 && r2 < 8 && !b[r2 * 8 + c]) push(r2 * 8 + c, null, true);
+          }
+        }
+        for (const dc of [-1, 1]) {
+          const cc = c + dc;
+          if (cc < 0 || cc > 7) continue;
+          const t = r1 * 8 + cc, q = b[t];
+          if (q) { if (q[0] === them || (selfCap && q[1] !== 'K')) push(t, q, false); }
+          else if (t === s.ep && b[r * 8 + cc] === them + 'P') moves.push({ f: i, t, p: 'P', cap: b[r * 8 + cc], ep: true });
+        }
+      }
+      if (VARIANT === 'sideways') {
+        for (const dc of [-1, 1]) {
+          const cc = c + dc;
+          if (cc >= 0 && cc < 8 && !b[r * 8 + cc]) moves.push({ f: i, t: r * 8 + cc, p: 'P', cap: null, side: true });
+        }
+      }
+    } else if (ty === 'N' || ty === 'K') {
+      const ds = ty === 'N' ? KN : KG;
+      for (const [dr, dc] of ds) {
+        const rr = r + dr, cc = c + dc;
+        if (rr < 0 || rr > 7 || cc < 0 || cc > 7) continue;
+        const t = rr * 8 + cc, q = b[t];
+        if (!q) moves.push({ f: i, t, p: ty, cap: null });
+        else if (q[0] === them || (selfCap && q[1] !== 'K')) moves.push({ f: i, t, p: ty, cap: q });
+      }
+      if (ty === 'K' && VARIANT !== 'nocastle') {
+        if (us === 'w' && i === 60) {
+          if (s.c.wK && !b[61] && !b[62] && b[63] === 'wR' && !attacked(b, 60, 'b') && !attacked(b, 61, 'b') && !attacked(b, 62, 'b'))
+            moves.push({ f: 60, t: 62, p: 'K', cap: null, cs: 'K' });
+          if (s.c.wQ && !b[59] && !b[58] && !b[57] && b[56] === 'wR' && !attacked(b, 60, 'b') && !attacked(b, 59, 'b') && !attacked(b, 58, 'b'))
+            moves.push({ f: 60, t: 58, p: 'K', cap: null, cs: 'Q' });
+        } else if (us === 'b' && i === 4) {
+          if (s.c.bK && !b[5] && !b[6] && b[7] === 'bR' && !attacked(b, 4, 'w') && !attacked(b, 5, 'w') && !attacked(b, 6, 'w'))
+            moves.push({ f: 4, t: 6, p: 'K', cap: null, cs: 'K' });
+          if (s.c.bQ && !b[3] && !b[2] && !b[1] && b[0] === 'bR' && !attacked(b, 4, 'w') && !attacked(b, 3, 'w') && !attacked(b, 2, 'w'))
+            moves.push({ f: 4, t: 2, p: 'K', cap: null, cs: 'Q' });
+        }
+      }
+    } else {
+      const ds = ty === 'B' ? BD : ty === 'R' ? RD : BD.concat(RD);
+      for (const [dr, dc] of ds) {
+        let rr = r + dr, cc = c + dc;
+        while (rr >= 0 && rr < 8 && cc >= 0 && cc < 8) {
+          const t = rr * 8 + cc, q = b[t];
+          if (!q) moves.push({ f: i, t, p: ty, cap: null });
+          else {
+            if (q[0] === them || (selfCap && q[1] !== 'K')) moves.push({ f: i, t, p: ty, cap: q });
+            break;
+          }
+          rr += dr; cc += dc;
+        }
+      }
+    }
+  }
+  return moves;
+}
+
+function make(s, m) {
+  const b = s.b.slice(), us = s.t, them = other(us), piece = b[m.f];
+  b[m.f] = null;
+  if (m.ep) b[(m.f >> 3) * 8 + (m.t & 7)] = null;
+  b[m.t] = m.pr ? us + m.pr : piece;
+  if (m.cs === 'K') { const rf = us === 'w' ? 63 : 7; b[rf] = null; b[rf - 2] = us + 'R'; }
+  else if (m.cs === 'Q') { const rf = us === 'w' ? 56 : 0; b[rf] = null; b[rf + 3] = us + 'R'; }
+  const c = { wK: s.c.wK, wQ: s.c.wQ, bK: s.c.bK, bQ: s.c.bQ };
+  if (piece[1] === 'K') { if (us === 'w') { c.wK = false; c.wQ = false; } else { c.bK = false; c.bQ = false; } }
+  for (const q of [m.f, m.t]) {
+    if (q === 63) c.wK = false; else if (q === 56) c.wQ = false; else if (q === 7) c.bK = false; else if (q === 0) c.bQ = false;
+  }
+  const ck = { w: s.ck.w, b: s.ck.b };
+  const ns = {
+    b, t: them, c,
+    ep: (m.dbl && !m.pr) ? (m.f + m.t) / 2 : -1,
+    hm: (piece[1] === 'P' || m.cap) ? 0 : s.hm + 1,
+    fm: s.fm + (us === 'b' ? 1 : 0),
+    ck
+  };
+  if (VARIANT === '3check' && inCheck(ns)) ck[us]++;
+  return ns;
+}
+
+function legal(s) {
+  const us = s.t, them = other(us), res = [];
+  for (const m of genPseudo(s)) {
+    const ns = make(s, m);
+    const k = ns.b.indexOf(us + 'K');
+    if (k < 0 || !attacked(ns.b, k, them)) res.push(m);
+  }
+  return res;
+}
+
+/* Winner by variant rule after a move (state s = after the move) */
+function variantWinner(s) {
+  const mv = other(s.t);
+  if (VARIANT === 'koth') {
+    const k = s.b.indexOf(mv + 'K');
+    if (k === 27 || k === 28 || k === 35 || k === 36) return mv;
+  }
+  if (VARIANT === '3check' && s.ck[mv] >= 3) return mv;
+  return null;
+}
+
+function insufficient(b) {
+  if (VARIANT === 'koth' || VARIANT === '3check') return false;
+  const minors = [];
+  for (const p of b) {
+    if (!p || p[1] === 'K') continue;
+    if (p[1] === 'N' || p[1] === 'B') minors.push(p); else return false;
+  }
+  return minors.length <= 1;
+}
+
+function posKey(s) {
+  return s.b.map(p => p || '.').join('') + s.t + (s.c.wK ? 'K' : '') + (s.c.wQ ? 'Q' : '') + (s.c.bK ? 'k' : '') + (s.c.bQ ? 'q' : '') + s.ep + (VARIANT === '3check' ? s.ck.w + '' + s.ck.b : '');
+}
+
+function toSAN(s, m, lm) {
+  let str;
+  if (m.cs) str = m.cs === 'K' ? 'O-O' : 'O-O-O';
+  else if (m.p === 'P') {
+    if (m.side) str = sqName(m.f) + '-' + sqName(m.t);
+    else {
+      str = m.cap ? 'abcdefgh'[m.f & 7] + 'x' + sqName(m.t) : sqName(m.t);
+      if (m.pr) str += '=' + m.pr;
+    }
+  } else {
+    let dis = '';
+    const others = lm.filter(o => o !== m && o.p === m.p && o.t === m.t && o.f !== m.f);
+    if (others.length) {
+      const sameFile = others.some(o => (o.f & 7) === (m.f & 7));
+      const sameRank = others.some(o => (o.f >> 3) === (m.f >> 3));
+      if (!sameFile) dis = 'abcdefgh'[m.f & 7];
+      else if (!sameRank) dis = String(8 - (m.f >> 3));
+      else dis = sqName(m.f);
+    }
+    str = m.p + dis + (m.cap ? 'x' : '') + sqName(m.t);
+  }
+  const ns = make(s, m);
+  if (variantWinner(ns)) str += '#';
+  else if (inCheck(ns)) str += legal(ns).length ? '+' : '#';
+  return str;
+}
+
+/* ===== AI ===== */
+const MATE = 100000;
+let deadline = 0, nodes = 0;
+class TimeoutSignal {}
+
+function evaluate(s) {
+  let sc = 0;
+  const b = s.b;
+  for (let i = 0; i < 64; i++) {
+    const p = b[i];
+    if (!p) continue;
+    const r = i >> 3, c = i & 7, col = p[0], ty = p[1];
+    const cd = 3.5 - Math.abs(c - 3.5), rd = 3.5 - Math.abs(r - 3.5);
+    let v = VALS[ty];
+    if (ty === 'N') v += (cd + rd) * 7;
+    else if (ty === 'B') v += (cd + rd) * 3.5;
+    else if (ty === 'Q') v += (cd + rd) * 1.5;
+    else if (ty === 'P') { const adv = col === 'w' ? 6 - r : r - 1; v += adv * 6 + cd * 2; if (adv >= 5) v += 30; }
+    else if (ty === 'K') {
+      if (VARIANT === 'koth') v += (cd + rd) * 25;
+      else v += (col === 'w' ? (r === 7 ? 12 : 0) : (r === 0 ? 12 : 0));
+    }
+    sc += col === 'w' ? v : -v;
+  }
+  if (VARIANT === '3check') sc += (s.ck.w - s.ck.b) * 150;
+  return s.t === 'w' ? sc : -sc;
+}
+
+function moveScore(m) {
+  return (m.cap ? 10 * VALS[m.cap[1]] - VALS[m.p] + 1000 : 0) + (m.pr ? VALS[m.pr] : 0);
+}
+function order(ms) { ms.sort((a, b) => moveScore(b) - moveScore(a)); }
+
+function quiesce(s, alpha, beta, qd, moves) {
+  if (VARIANT !== 'standard' && variantWinner(s)) return -MATE + 50;
+  if (!moves.length) return inCheck(s) ? -MATE + 50 : 0;
+  const stand = evaluate(s);
+  if (qd <= 0 || stand >= beta) return stand;
+  if (stand > alpha) alpha = stand;
+  const caps = moves.filter(m => m.cap || m.pr);
+  order(caps);
+  for (const m of caps) {
+    const ns = make(s, m);
+    const sc = -quiesce(ns, -beta, -alpha, qd - 1, legal(ns));
+    if (sc >= beta) return sc;
+    if (sc > alpha) alpha = sc;
+  }
+  return alpha;
+}
+
+function negamax(s, depth, alpha, beta, ply) {
+  if ((++nodes & 511) === 0 && performance.now() > deadline) throw new TimeoutSignal();
+  const moves = legal(s);
+  if (!moves.length) return inCheck(s) ? -MATE + ply : 0;
+  if (depth <= 0) return quiesce(s, alpha, beta, 3, moves);
+  order(moves);
+  let best = -Infinity;
+  for (const m of moves) {
+    const ns = make(s, m);
+    const sc = variantWinner(ns) ? MATE - ply - 1 : -negamax(ns, depth - 1, -beta, -alpha, ply + 1);
+    if (sc > best) best = sc;
+    if (best > alpha) alpha = best;
+    if (alpha >= beta) break;
+  }
+  return best;
+}
+
+const LEVELS = {
+  easy:   { depth: 1, time: 300,  noise: 180 },
+  medium: { depth: 2, time: 800,  noise: 25 },
+  hard:   { depth: 4, time: 2200, noise: 0 }
+};
+
+function bestMove(s, level) {
+  const moves = legal(s);
+  if (!moves.length) return null;
+  if (moves.length === 1) return moves[0];
+  const cfg = LEVELS[level] || LEVELS.medium;
+  deadline = performance.now() + cfg.time;
+  nodes = 0;
+  order(moves);
+  let ranked = moves.map(m => ({ m, sc: 0 }));
+  let best = moves[0];
+  for (let d = 1; d <= cfg.depth; d++) {
+    try {
+      const cur = [];
+      let alpha = -Infinity;
+      for (const { m } of ranked) {
+        const ns = make(s, m);
+        let sc;
+        if (variantWinner(ns)) sc = MATE;
+        else if (cfg.noise > 0) sc = -negamax(ns, d - 1, -Infinity, Infinity, 1) + (Math.random() - 0.5) * 2 * cfg.noise;
+        else sc = -negamax(ns, d - 1, -Infinity, -alpha, 1);
+        cur.push({ m, sc });
+        if (sc > alpha) alpha = sc;
+      }
+      cur.sort((a, b) => b.sc - a.sc);
+      ranked = cur;
+      best = cur[0].m;
+      if (cur[0].sc >= MATE - 100) break;
+    } catch (e) {
+      if (e instanceof TimeoutSignal) break;
+      throw e;
+    }
+  }
+  return best;
+}
+/* ===== END ENGINE ===== */
+
+</script>
+<script>
+/* ===== UI ===== */
+const $ = id => document.getElementById(id);
+const GF = { K: '\u265A\uFE0E', Q: '\u265B\uFE0E', R: '\u265C\uFE0E', B: '\u265D\uFE0E', N: '\u265E\uFE0E', P: '\u265F\uFE0E' };
+const GO = { K: '\u2654\uFE0E', Q: '\u2655\uFE0E', R: '\u2656\uFE0E', B: '\u2657\uFE0E', N: '\u2658\uFE0E', P: '\u2659\uFE0E' };
+const THEMES = {
+  green:  ['#eeeed2', '#769656', 'سبز'],
+  brown:  ['#f0d9b5', '#b58863', 'قهوه‌ای'],
+  blue:   ['#dee3e6', '#8ca2ad', 'آبی'],
+  purple: ['#ece9f5', '#8877b7', 'بنفش'],
+  gray:   ['#e4e4e4', '#7d7d7d', 'خاکستری']
+};
+const VARIANTS = [
+  { id: 'standard', ico: '♞', name: 'استاندارد', desc: 'شطرنج کلاسیک با همه‌ی قوانین' },
+  { id: 'sideways', ico: '↔', name: 'پیاده‌های کناررو', desc: 'پیاده‌ها می‌توانند یک خانه هم به پهلو بروند' },
+  { id: 'capture', ico: '💥', name: 'هر چیزی را بزن', desc: 'می‌توانی مهره‌های خودت را هم بزنی (به‌جز شاه)' },
+  { id: 'koth', ico: '⛰', name: 'شاه تپه', desc: 'اولین کسی که شاهش را به مرکز برساند برنده است' },
+  { id: '3check', ico: '3+', name: '۳ کیش', desc: 'اولین کسی که ۳ بار کیش بدهد یا مات کند برنده است' },
+  { id: 'torpedo', ico: '🚀', name: 'اژدر', desc: 'پیاده‌ها همیشه می‌توانند یک یا دو خانه جلو بروند' },
+  { id: 'blindfold', ico: '🙈', name: 'چشم‌بسته', desc: 'بدون دیدن مهره‌ها بازی کن' },
+  { id: 'nocastle', ico: '🏰', name: 'بدون قلعه', desc: 'قلعه رفتن ممنوع است و شاه آسیب‌پذیرتر می‌شود' }
+];
+const LEVEL_FA = { easy: 'آسان', medium: 'متوسط', hard: 'سخت' };
+const SAVE_KEY = 'chess_game_v1';
+const SET_KEY = 'chess_settings_v1';
+
+let settings = { mode: 'ai', level: 'medium', color: 'w', variant: 'standard', theme: 'green', sound: true, pieces: 'glyph' };
+try { Object.assign(settings, JSON.parse(localStorage.getItem(SET_KEY) || '{}')); } catch (e) {}
+if (!VARIANTS.some(v => v.id === settings.variant)) settings.variant = 'standard';
+if (!THEMES[settings.theme]) settings.theme = 'green';
+
+let S, hist, movesList, keys, legalCache, selected, lastMove, over, thinking, game, view, drag, pending;
+
+/* ---------- sound ---------- */
+let ac = null;
+function beep(freq, dur, type, vol, delay) {
+  if (!settings.sound) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    o.connect(g); g.connect(ac.destination);
+    const t = ac.currentTime + (delay || 0), v = vol || 0.12;
+    g.gain.setValueAtTime(v, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur + 0.02);
+  } catch (e) {}
+}
+const sndMove = () => beep(520, 0.07, 'triangle', 0.14);
+const sndCap = () => { beep(200, 0.12, 'square', 0.08); beep(140, 0.1, 'triangle', 0.14, 0.04); };
+const sndCheck = () => { beep(880, 0.1, 'square', 0.07); beep(880, 0.14, 'square', 0.07, 0.12); };
+const sndEnd = () => { beep(523, 0.25, 'triangle', 0.12); beep(659, 0.25, 'triangle', 0.12, 0.14); beep(784, 0.4, 'triangle', 0.12, 0.28); };
+
+/* ---------- helpers ---------- */
+const colorFa = c => (c === 'w' ? 'سفید' : 'سیاه');
+const isAI = () => game.mode === 'ai';
+function nameOf(c) {
+  if (isAI()) return c === game.human ? 'شما' : 'کامپیوتر (' + LEVEL_FA[game.level] + ')';
+  return 'بازیکن ' + colorFa(c);
+}
+function winnerText(c) {
+  if (isAI()) return c === game.human ? 'شما برنده شدید! 🎉' : 'کامپیوتر برنده شد';
+  return colorFa(c) + ' برنده شد! 🎉';
+}
+function humanTurn() { return !over && !thinking && (game.mode === 'pvp' || S.t === game.human); }
+
+/* ---------- game control ---------- */
+function newGame(cfg) {
+  const c = cfg || settings;
+  const human = c.color === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : c.color;
+  game = { mode: c.mode, level: c.level, variant: c.variant, human };
+  VARIANT = game.variant;
+  S = initialState(); hist = []; movesList = []; keys = [posKey(S)];
+  legalCache = legal(S); selected = -1; lastMove = null; over = null; thinking = false;
+  view = game.mode === 'ai' ? human : 'w';
+  closeModals(); render(null); save();
+  maybeAI();
+}
+
+function applyMove(m, animate) {
+  const san = toSAN(S, m, legalCache);
+  hist.push(S);
+  S = make(S, m);
+  movesList.push({ m, san });
+  lastMove = { f: m.f, t: m.t };
+  keys.push(posKey(S));
+  legalCache = legal(S);
+  selected = -1;
+  const st = status();
+  if (st.over) { over = st; }
+  render(animate ? m : null);
+  if (st.over) { sndEnd(); save(); setTimeout(showEnd, 450); return; }
+  if (inCheck(S)) sndCheck(); else if (m.cap) sndCap(); else sndMove();
+  save();
+  maybeAI();
+}
+
+function status() {
+  const w = variantWinner(S);
+  if (w) return { over: true, winner: w, reason: VARIANT === 'koth' ? 'koth' : '3check' };
+  if (!legalCache.length) return inCheck(S) ? { over: true, winner: other(S.t), reason: 'mate' } : { over: true, winner: null, reason: 'stalemate' };
+  if (S.hm >= 100) return { over: true, winner: null, reason: 'fifty' };
+  if (insufficient(S.b)) return { over: true, winner: null, reason: 'material' };
+  const k = keys[keys.length - 1];
+  if (keys.filter(x => x === k).length >= 3) return { over: true, winner: null, reason: 'repeat' };
+  return { over: false };
+}
+
+function maybeAI() {
+  if (over || !isAI() || S.t === game.human) return;
+  thinking = true; renderStatus();
+  setTimeout(() => {
+    const m = bestMove(S, game.level);
+    thinking = false;
+    if (!over && m) applyMove(m, true);
+  }, 80);
+}
+
+function undo() {
+  if (thinking || !movesList.length) return;
+  const pop = () => { S = hist.pop(); movesList.pop(); keys.pop(); };
+  pop();
+  if (isAI()) while (movesList.length && S.t !== game.human) pop();
+  legalCache = legal(S); selected = -1; over = null;
+  const lm = movesList[movesList.length - 1];
+  lastMove = lm ? { f: lm.m.f, t: lm.m.t } : null;
+  render(null); save();
+  maybeAI();
+}
+
+function resign() {
+  if (over) return;
+  const loser = isAI() ? game.human : S.t;
+  over = { over: true, winner: other(loser), reason: 'resign' };
+  render(null); sndEnd(); save(); showEnd();
+}
+
+/* ---------- save / restore ---------- */
+function save() {
+  try {
+    localStorage.setItem(SET_KEY, JSON.stringify(settings));
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      game, view,
+      moves: movesList.map(x => [x.m.f, x.m.t, x.m.pr || null]),
+      res: over && over.reason === 'resign' ? over.winner : null
+    }));
+  } catch (e) {}
+}
+
+function restore() {
+  try {
+    const d = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+    if (!d || !d.game || !VARIANTS.some(v => v.id === d.game.variant)) return false;
+    game = d.game; VARIANT = game.variant;
+    S = initialState(); hist = []; movesList = []; keys = [posKey(S)];
+    legalCache = legal(S);
+    for (const [f, t, pr] of d.moves) {
+      const m = legalCache.find(x => x.f === f && x.t === t && (x.pr || null) === pr);
+      if (!m) break;
+      const san = toSAN(S, m, legalCache);
+      hist.push(S); S = make(S, m); movesList.push({ m, san }); keys.push(posKey(S)); legalCache = legal(S);
+    }
+    lastMove = movesList.length ? { f: movesList[movesList.length - 1].m.f, t: movesList[movesList.length - 1].m.t } : null;
+    selected = -1; thinking = false; over = null;
+    const st = status(); if (st.over) over = st;
+    if (d.res) over = { over: true, winner: d.res, reason: 'resign' };
+    view = d.view || (game.mode === 'ai' ? game.human : 'w');
+    return true;
+  } catch (e) { return false; }
+}
+
+/* ---------- rendering ---------- */
+function applyTheme() {
+  const t = THEMES[settings.theme];
+  document.documentElement.style.setProperty('--light', t[0]);
+  document.documentElement.style.setProperty('--dark', t[1]);
+}
+
+function render(animMove) {
+  const board = $('board');
+  const peekOn = $('peekBtn').classList.contains('on');
+  board.className = (VARIANT === 'blindfold' ? 'blind ' : '') + (peekOn ? 'peek ' : '') + (settings.pieces === 'letter' ? 'letters' : '');
+  board.innerHTML = '';
+  const flip = view === 'b';
+  const targets = {};
+  if (selected >= 0 && !(VARIANT === 'blindfold' && !peekOn)) {
+    for (const m of legalCache) if (m.f === selected) targets[m.t] = m.cap ? 2 : 1;
+  }
+  const chk = inCheck(S) ? S.b.indexOf(S.t + 'K') : -1;
+  const frag = document.createDocumentFragment();
+  for (let dr = 0; dr < 8; dr++) {
+    for (let dc = 0; dc < 8; dc++) {
+      const r = flip ? 7 - dr : dr, c = flip ? 7 - dc : dc, i = r * 8 + c;
+      const sq = document.createElement('div');
+      let cls = 'sq ' + (((r + c) & 1) ? 'dark' : 'light');
+      if (i === selected) cls += ' sel';
+      if (lastMove && (i === lastMove.f || i === lastMove.t)) cls += ' last';
+      if (i === chk) cls += ' chk';
+      if (targets[i]) cls += ' tgt' + (targets[i] === 2 ? ' cap' : '');
+      sq.className = cls; sq.dataset.i = i;
+      if (dc === 0) { const e = document.createElement('i'); e.className = 'co r'; e.textContent = 8 - r; sq.appendChild(e); }
+      if (dr === 7) { const e = document.createElement('i'); e.className = 'co f'; e.textContent = 'abcdefgh'[c]; sq.appendChild(e); }
+      const p = S.b[i];
+      if (p) sq.appendChild(makePiece(p));
+      frag.appendChild(sq);
+    }
+  }
+  board.appendChild(frag);
+  if (animMove) {
+    const el = board.querySelector('.sq[data-i="' + animMove.t + '"] .pc');
+    if (el && el.animate) {
+      const sg = flip ? -1 : 1;
+      const dx = sg * ((animMove.f & 7) - (animMove.t & 7)) * 100;
+      const dy = sg * ((animMove.f >> 3) - (animMove.t >> 3)) * 100;
+      el.style.zIndex = 5;
+      el.animate([{ transform: 'translate(' + dx + '%,' + dy + '%)' }, { transform: 'translate(0,0)' }], { duration: 190, easing: 'ease-out' });
+    }
+  }
+  renderBars(); renderStatus(); renderMoves();
+  $('undoBtn').disabled = !movesList.length || thinking;
+  $('peekBtn').hidden = VARIANT !== 'blindfold';
+  $('variantTag').textContent = (VARIANTS.find(v => v.id === VARIANT) || VARIANTS[0]).name;
+}
+
+function makePiece(p) {
+  const el = document.createElement('span');
+  const col = p[0], ty = p[1];
+  el.className = 'pc ' + col;
+  if (settings.pieces === 'letter') { el.classList.add('let'); el.textContent = ty; }
+  else { el.dataset.f = GF[ty]; el.dataset.o = GO[ty]; }
+  return el;
+}
+
+function renderBars() {
+  const top = other(view), bot = view;
+  fillBar('top', top); fillBar('bot', bot);
+}
+function fillBar(pos, color) {
+  $(pos + 'Name').textContent = nameOf(color);
+  $(pos + 'Dot').className = 'dot ' + color;
+  const init = { P: 8, N: 2, B: 2, R: 2, Q: 1 };
+  const have = { P: 0, N: 0, B: 0, R: 0, Q: 0 };
+  const opp = other(color);
+  for (const p of S.b) if (p && p[0] === opp && have[p[1]] !== undefined) have[p[1]]++;
+  let html = '';
+  for (const ty of ['Q', 'R', 'B', 'N', 'P']) {
+    const n = Math.max(0, init[ty] - have[ty]);
+    for (let k = 0; k < n; k++) html += '<span class="cp ' + opp + '">' + GF[ty] + '</span>';
+  }
+  $(pos + 'Cap').innerHTML = html;
+  $(pos + 'Chk').textContent = VARIANT === '3check' ? 'کیش: ' + S.ck[color] + '/3' : '';
+}
+
+function resultShort(st) {
+  switch (st.reason) {
+    case 'mate': return 'مات! ' + winnerText(st.winner);
+    case 'koth': return 'شاه به تپه رسید! ' + winnerText(st.winner);
+    case '3check': return 'سومین کیش! ' + winnerText(st.winner);
+    case 'resign': return 'تسلیم شد. ' + winnerText(st.winner);
+    case 'stalemate': return 'پات (بن‌بست) — مساوی';
+    case 'fifty': return 'مساوی — قانون ۵۰ حرکت';
+    case 'material': return 'مساوی — مهره‌ی کافی برای مات نیست';
+    case 'repeat': return 'مساوی — تکرار سه‌باره‌ی وضعیت';
+  }
+  return '';
+}
+
+function renderStatus() {
+  let t;
+  if (over) t = resultShort(over);
+  else if (thinking) t = 'کامپیوتر در حال فکر کردن…';
+  else {
+    const who = isAI() ? (S.t === game.human ? 'نوبت شماست' : 'نوبت کامپیوتر') : 'نوبت ' + colorFa(S.t);
+    t = (inCheck(S) ? 'کیش! ' : '') + who;
+  }
+  const el = $('status');
+  el.textContent = t;
+  el.className = 'status' + (over ? ' end' : inCheck(S) ? ' warn' : '');
+}
+
+function renderMoves() {
+  const box = $('moves');
+  let html = '';
+  movesList.forEach((x, i) => {
+    if (i % 2 === 0) html += '<span class="mn">' + (i / 2 + 1) + '.</span>';
+    html += '<span class="mv' + (i === movesList.length - 1 ? ' cur' : '') + '">' + x.san + '</span>';
+  });
+  box.innerHTML = html || '<span class="muted">هنوز حرکتی انجام نشده است</span>';
+  box.scrollLeft = box.scrollWidth;
+}
+
+/* ---------- input ---------- */
+function sqAt(x, y) {
+  const r = $('board').getBoundingClientRect();
+  const cx = Math.floor((x - r.left) / r.width * 8), cy = Math.floor((y - r.top) / r.height * 8);
+  if (cx < 0 || cx > 7 || cy < 0 || cy > 7) return -1;
+  return view === 'b' ? (7 - cy) * 8 + (7 - cx) : cy * 8 + cx;
+}
+
+function tryMove(cands, dragged) {
+  if (cands.length > 1 && cands[0].pr) { showPromo(cands, dragged); return; }
+  applyMove(cands[0], !dragged);
+}
+
+function showPromo(cands, dragged) {
+  pending = { cands, dragged };
+  const box = $('promoBtns');
+  box.innerHTML = '';
+  const col = S.t;
+  for (const pr of ['Q', 'R', 'B', 'N']) {
+    const b = document.createElement('button');
+    b.className = 'promoBtn';
+    b.appendChild(makePiece(col + pr));
+    b.onclick = () => {
+      const m = pending.cands.find(x => x.pr === pr);
+      const d = pending.dragged; pending = null;
+      $('promo').classList.remove('open');
+      applyMove(m, !d);
+    };
+    box.appendChild(b);
+  }
+  $('promo').classList.add('open');
+}
+
+function initInput() {
+  const board = $('board');
+  board.addEventListener('pointerdown', e => {
+    if (!humanTurn()) return;
+    e.preventDefault();
+    const i = sqAt(e.clientX, e.clientY);
+    if (i < 0) return;
+    if (selected >= 0) {
+      const cands = legalCache.filter(m => m.f === selected && m.t === i);
+      if (cands.length) { tryMove(cands, false); return; }
+    }
+    const p = S.b[i];
+    if (p && p[0] === S.t) {
+      const wasSel = selected === i;
+      selected = i; render(null);
+      drag = { from: i, x: e.clientX, y: e.clientY, moved: false, ghost: null, wasSel };
+      try { board.setPointerCapture(e.pointerId); } catch (_) {}
+    } else { selected = -1; render(null); }
+  });
+  board.addEventListener('pointermove', e => {
+    if (!drag) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 7) {
+      drag.moved = true;
+      const src = board.querySelector('.sq[data-i="' + drag.from + '"] .pc');
+      if (src) {
+        const size = board.getBoundingClientRect().width / 8;
+        const g = document.createElement('div');
+        g.className = 'ghost'; g.style.width = g.style.height = size + 'px';
+        g.appendChild(src.cloneNode(true));
+        document.body.appendChild(g);
+        drag.ghost = g; drag.size = size;
+        src.style.opacity = '.3';
+      }
+    }
+    if (drag.ghost) {
+      drag.ghost.style.left = (e.clientX - drag.size / 2) + 'px';
+      drag.ghost.style.top = (e.clientY - drag.size / 2) + 'px';
+    }
+  });
+  const end = (e, cancel) => {
+    if (!drag) return;
+    const d = drag; drag = null;
+    if (d.ghost) d.ghost.remove();
+    if (d.moved) {
+      const i = cancel ? -1 : sqAt(e.clientX, e.clientY);
+      const cands = legalCache.filter(m => m.f === d.from && m.t === i);
+      if (cands.length) tryMove(cands, true); else render(null);
+    } else if (d.wasSel) { selected = -1; render(null); }
+  };
+  board.addEventListener('pointerup', e => end(e, false));
+  board.addEventListener('pointercancel', e => end(e, true));
+  board.addEventListener('contextmenu', e => e.preventDefault());
+}
+
+/* ---------- modals ---------- */
+function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('open')); }
+
+function showEnd() {
+  if (!over) return;
+  $('endTitle').textContent = over.winner ? winnerText(over.winner) : 'مساوی';
+  $('endText').textContent = resultShort(over);
+  $('end').classList.add('open');
+}
+
+let draft;
+function openSettings() {
+  draft = Object.assign({}, settings);
+  buildSettings();
+  $('settings').classList.add('open');
+}
+function seg(id, opts, key, after) {
+  const box = $(id); box.innerHTML = '';
+  opts.forEach(([val, label]) => {
+    const b = document.createElement('button');
+    b.className = 'segb' + (draft[key] === val ? ' on' : '');
+    b.textContent = label;
+    b.onclick = () => { draft[key] = val; if (key === 'theme' || key === 'sound' || key === 'pieces') { settings[key] = val; applyTheme(); render(null); save(); } buildSettings(); };
+    box.appendChild(b);
+  });
+}
+function buildSettings() {
+  seg('sMode', [['ai', 'با کامپیوتر'], ['pvp', 'دو نفره']], 'mode');
+  seg('sLevel', [['easy', 'آسان'], ['medium', 'متوسط'], ['hard', 'سخت']], 'level');
+  seg('sColor', [['w', 'سفید'], ['b', 'سیاه'], ['r', 'تصادفی']], 'color');
+  $('rowLevel').style.display = draft.mode === 'ai' ? '' : 'none';
+  $('rowColor').style.display = draft.mode === 'ai' ? '' : 'none';
+  seg('sPieces', [['glyph', 'نمادی'], ['letter', 'حروفی']], 'pieces');
+  seg('sSound', [[true, 'روشن'], [false, 'خاموش']], 'sound');
+  const vb = $('sVariants'); vb.innerHTML = '';
+  VARIANTS.forEach(v => {
+    const d = document.createElement('button');
+    d.className = 'vcard' + (draft.variant === v.id ? ' on' : '');
+    d.innerHTML = '<span class="vi">' + v.ico + '</span><span class="vt"><b>' + v.name + '</b><small>' + v.desc + '</small></span>';
+    d.onclick = () => { draft.variant = v.id; buildSettings(); };
+    vb.appendChild(d);
+  });
+  const tb = $('sTheme'); tb.innerHTML = '';
+  Object.keys(THEMES).forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'sw' + (draft.theme === k ? ' on' : '');
+    b.style.background = 'linear-gradient(135deg,' + THEMES[k][0] + ' 50%,' + THEMES[k][1] + ' 50%)';
+    b.title = THEMES[k][2];
+    b.onclick = () => { draft.theme = k; settings.theme = k; applyTheme(); save(); buildSettings(); };
+    tb.appendChild(b);
+  });
+}
+
+function boot() {
+  applyTheme(); initInput();
+  $('newBtn').onclick = openSettings;
+  $('undoBtn').onclick = undo;
+  $('flipBtn').onclick = () => { view = other(view); render(null); save(); };
+  $('resignBtn').onclick = () => { if (!over && movesList.length && confirm('تسلیم می‌شوی؟')) resign(); };
+  $('startBtn').onclick = () => { Object.assign(settings, draft); newGame(settings); };
+  $('closeSet').onclick = closeModals;
+  $('endNew').onclick = () => { closeModals(); openSettings(); };
+  $('endClose').onclick = closeModals;
+  $('promoCancel').onclick = () => { pending = null; $('promo').classList.remove('open'); render(null); };
+  const peek = $('peekBtn');
+  const on = v => () => { peek.classList.toggle('on', v); render(null); };
+  ['pointerdown'].forEach(ev => peek.addEventListener(ev, e => { e.preventDefault(); on(true)(); }));
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => peek.addEventListener(ev, on(false)));
+  document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown', e => { if (e.target === m && m.id !== 'promo') closeModals(); }));
+  if (restore()) { render(null); if (over) { } else maybeAI(); }
+  else newGame(settings);
+}
+document.addEventListener('DOMContentLoaded', boot);
+/* ===== END UI ===== */
+
+</script>
+</body>
+</html>
